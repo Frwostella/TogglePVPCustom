@@ -23,6 +23,7 @@ TogglePVPCustom can also optionally hook into Frwostella's CombatLog plugin. Whe
 - TAB belowname-objective compatible.
 - Optional CombatLog support.
 - Blocks `/pvp off` while a player is in combat if CombatLog is installed.
+- Build profile support for Paper 1.21.11 and Paper 26.1+.
 
 ---
 
@@ -50,6 +51,37 @@ Alias:
 |---|---|---|
 | `togglepvp.use` | Allows players to use `/pvp` | Everyone |
 | `togglepvp.reload` | Allows players to reload the plugin | OP |
+
+---
+
+## Version Support
+
+TogglePVPCustom can be built for both Paper 1.21.11 and newer Paper 26.1+ versions.
+
+| Target | Java | Maven Profile |
+|---|---|---|
+| Paper 1.21.11 | Java 21 | `paper-1.21.11` |
+| Paper 26.1+ | Java 25 | `paper-26.1-plus` |
+
+Build for Paper 1.21.11:
+
+```bash
+mvn clean package
+```
+
+or:
+
+```bash
+mvn clean package -Ppaper-1.21.11
+```
+
+Build for Paper 26.1+:
+
+```bash
+mvn clean package -Ppaper-26.1-plus
+```
+
+The compiled jar will be inside the `target` folder.
 
 ---
 
@@ -284,8 +316,7 @@ messages:
 
 ## Requirements
 
-- Paper 1.21.11
-- Java 21
+- Paper 1.21.11 with Java 21, or Paper 26.1+ with Java 25
 
 Optional:
 
