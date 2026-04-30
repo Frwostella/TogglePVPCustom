@@ -66,18 +66,8 @@ The current version of TogglePVPCustom supports **Paper 26.1+** and should be bu
 For Paper 1.21+ / 1.21.11 support, download or view release `1.4.1` here:
 
 ```txt
-https://github.com/Frwostella/TogglePVPCustom/releases/tag/1.3
+https://github.com/Frwostella/TogglePVPCustom/releases/tag/1.4.1
 ```
-
-Build the current Paper 26.1+ version:
-
-```bash
-mvn clean package
-```
-
-The compiled jar will be inside the `target` folder.
-
----
 
 ## Optional Dependencies
 
