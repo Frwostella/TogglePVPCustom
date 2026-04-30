@@ -1,0 +1,232 @@
+# TogglePVPCustom
+
+TogglePVPCustom is a simple Paper Minecraft plugin that lets players turn their PvP status on or off individually.
+
+PvP only works when both players have PvP enabled. If one player has PvP disabled, they cannot attack or be attacked by other players.
+
+The plugin also supports PlaceholderAPI, so PvP status can be displayed in scoreboards, TAB, nametags, or below-name displays.
+
+---
+
+## Features
+
+- Players can toggle their own PvP status.
+- Prevents attacking if the attacker has PvP disabled.
+- Prevents attacking players who have PvP disabled.
+- Saves player PvP status.
+- Configurable messages.
+- Reload command without restarting the server.
+- PlaceholderAPI support.
+- Optional native below-name scoreboard display.
+- TAB belowname-objective compatible.
+
+---
+
+## Commands
+
+| Command | Description |
+|---|---|
+| `/pvp` | Toggle your PvP status |
+| `/pvp on` | Enable your PvP |
+| `/pvp off` | Disable your PvP |
+| `/pvp status` | Check your PvP status |
+| `/pvp reload` | Reload the plugin config |
+
+Alias:
+
+```txt
+/togglepvp
+```
+
+---
+
+## Permissions
+
+| Permission | Description | Default |
+|---|---|---|
+| `togglepvp.use` | Allows players to use `/pvp` | Everyone |
+| `togglepvp.reload` | Allows players to reload the plugin | OP |
+
+---
+
+## PlaceholderAPI Placeholders
+
+For the player's own status, use:
+
+```txt
+%togglepvp_status%
+%togglepvp_status_colored%
+%togglepvp_value%
+%togglepvp_enabled%
+```
+
+Examples:
+
+```txt
+%togglepvp_status% = ON / OFF
+%togglepvp_status_colored% = &aON / &cOFF
+%togglepvp_value% = 1 / 0
+%togglepvp_enabled% = true / false
+```
+
+For nametag or below-name plugins that support relational placeholders, use:
+
+```txt
+%rel_togglepvp_status%
+%rel_togglepvp_status_colored%
+%rel_togglepvp_value%
+%rel_togglepvp_enabled%
+```
+
+Relational placeholders are useful when the display is showing another player's status instead of your own.
+
+---
+
+## TAB Belowname Setup
+
+If you are using TAB for below-name status, disable the plugin's built-in belowname first in `plugins/TogglePVPCustom/config.yml`:
+
+```yml
+belowname:
+  enabled: false
+```
+
+Then use this in TAB's config:
+
+```yml
+belowname-objective:
+  enabled: true
+  value: "%togglepvp_value%"
+  title: ""
+  fancy-value: "&cPVP: %togglepvp_status_colored%"
+  fancy-value-default: "NPC"
+  disable-condition: ""
+```
+
+After editing the configs, run:
+
+```txt
+/pvp reload
+/papi reload
+/tab reload
+```
+
+Do not put `%togglepvp_status%` in TAB's `title`, because that can show your own PvP status under other players. Use `fancy-value` instead.
+
+---
+
+## Native Belowname Setup
+
+The plugin also has its own native Minecraft below-name display.
+
+Native below-name objectives can only show numbers, so it will display something like:
+
+```txt
+1 PvP
+0 PvP
+```
+
+Example config:
+
+```yml
+belowname:
+  enabled: true
+  objective-name: "pvpstatus"
+  display-name: "&cPvP"
+  enabled-score: 1
+  disabled-score: 0
+  remove-on-disable: true
+```
+
+Use this only if you are not using TAB's belowname-objective, because two plugins controlling belowname at the same time can conflict.
+
+---
+
+## Config
+
+The plugin creates a `config.yml` file where you can edit:
+
+- Default PvP status
+- Whether player PvP status should save
+- Below-name settings
+- Placeholder text
+- Messages
+- Attack message cooldown
+
+Example:
+
+```yml
+settings:
+  default-pvp: true
+  save-player-status: true
+  attack-message-cooldown-seconds: 2
+
+belowname:
+  enabled: false
+  objective-name: "pvpstatus"
+  display-name: "&cPvP"
+  enabled-score: 1
+  disabled-score: 0
+  remove-on-disable: true
+
+placeholders:
+  status-on: "ON"
+  status-off: "OFF"
+
+  status-colored-on: "&aON"
+  status-colored-off: "&cOFF"
+
+messages:
+  prefix: "&8[&cPvP&8] "
+
+  no-permission: "%prefix%&cYou do not have permission to use this command."
+  players-only: "%prefix%&cOnly players can use this command."
+  reload: "%prefix%&aConfiguration reloaded."
+
+  pvp-enabled: "%prefix%&aYour PvP is now ENABLED."
+  pvp-disabled: "%prefix%&cYour PvP is now DISABLED."
+  pvp-status-enabled: "%prefix%&aYour PvP is currently ENABLED."
+  pvp-status-disabled: "%prefix%&cYour PvP is currently DISABLED."
+
+  your-pvp-disabled: "%prefix%&cYou cannot attack while your PvP is disabled."
+  target-pvp-disabled: "%prefix%&cYou cannot attack &e%target% &cbecause their PvP is disabled."
+
+  usage: "%prefix%&cUsage: /pvp [on|off|status|reload]"
+```
+
+---
+
+## Installation
+
+1. Download or build the plugin `.jar`.
+2. Put the `.jar` file into your server's `plugins` folder.
+3. Install PlaceholderAPI if you want placeholder support.
+4. Restart your server.
+5. Edit the config if needed.
+6. Run:
+
+```txt
+/pvp reload
+```
+
+---
+
+## Requirements
+
+- Paper 1.21.11
+- Java 21
+- PlaceholderAPI optional, but required for placeholders
+
+---
+
+## Package Name
+
+```txt
+jre.frwostella.togglePVPCustom
+```
+
+---
+
+## Author
+
+Made by Frwostella.
