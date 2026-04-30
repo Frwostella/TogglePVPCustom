@@ -6,6 +6,7 @@ author: Frwostella
 description: Allows players to individually toggle their PvP status.
 softdepend:
   - PlaceholderAPI
+  - CombatLog
 
 commands:
   pvp:
