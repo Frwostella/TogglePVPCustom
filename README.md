@@ -6,6 +6,8 @@ PvP only works when both players have PvP enabled. If one player has PvP disable
 
 The plugin also supports PlaceholderAPI, so PvP status can be displayed in scoreboards, TAB, nametags, or below-name displays.
 
+TogglePVPCustom can also optionally hook into Frwostella's CombatLog plugin. When CombatLog is installed and the hook is enabled, players cannot turn off PvP while they are in combat.
+
 ---
 
 ## Features
@@ -19,6 +21,8 @@ The plugin also supports PlaceholderAPI, so PvP status can be displayed in score
 - PlaceholderAPI support.
 - Optional native below-name scoreboard display.
 - TAB belowname-objective compatible.
+- Optional CombatLog support.
+- Blocks `/pvp off` while a player is in combat if CombatLog is installed.
 
 ---
 
@@ -46,6 +50,71 @@ Alias:
 |---|---|---|
 | `togglepvp.use` | Allows players to use `/pvp` | Everyone |
 | `togglepvp.reload` | Allows players to reload the plugin | OP |
+
+---
+
+## Optional Dependencies
+
+These plugins are optional, but unlock extra features.
+
+| Plugin | Required? | Purpose |
+|---|---|---|
+| PlaceholderAPI | Optional | Enables PvP status placeholders |
+| CombatLog | Optional | Prevents players from disabling PvP while in combat |
+
+In `plugin.yml`, the optional dependencies should be listed like this:
+
+```yml
+softdepend:
+  - PlaceholderAPI
+  - CombatLog
+```
+
+CombatLog is optional. TogglePVPCustom will still work without it.
+
+---
+
+## CombatLog Hook
+
+If Frwostella's CombatLog plugin is installed, TogglePVPCustom can check if a player is currently combat tagged.
+
+When enabled, players cannot run:
+
+```txt
+/pvp off
+```
+
+while they are in combat.
+
+They can still use:
+
+```txt
+/pvp on
+/pvp status
+```
+
+Example config:
+
+```yml
+combatlog-hook:
+  enabled: true
+  plugin-name: "CombatLog"
+  block-disable-in-combat: true
+```
+
+Message:
+
+```yml
+messages:
+  cannot-disable-pvp-in-combat: "%prefix%&cYou cannot disable PvP while you are in combat."
+```
+
+If you do not want this feature, set:
+
+```yml
+combatlog-hook:
+  enabled: false
+```
 
 ---
 
@@ -142,24 +211,18 @@ Use this only if you are not using TAB's belowname-objective, because two plugin
 
 ---
 
-## Config
-
-The plugin creates a `config.yml` file where you can edit:
-
-- Default PvP status
-- Whether player PvP status should save
-- Below-name settings
-- Placeholder text
-- Messages
-- Attack message cooldown
-
-Example:
+## Full Example Config
 
 ```yml
 settings:
   default-pvp: true
   save-player-status: true
   attack-message-cooldown-seconds: 2
+
+combatlog-hook:
+  enabled: true
+  plugin-name: "CombatLog"
+  block-disable-in-combat: true
 
 belowname:
   enabled: false
@@ -190,6 +253,7 @@ messages:
 
   your-pvp-disabled: "%prefix%&cYou cannot attack while your PvP is disabled."
   target-pvp-disabled: "%prefix%&cYou cannot attack &e%target% &cbecause their PvP is disabled."
+  cannot-disable-pvp-in-combat: "%prefix%&cYou cannot disable PvP while you are in combat."
 
   usage: "%prefix%&cUsage: /pvp [on|off|status|reload]"
 ```
@@ -201,9 +265,10 @@ messages:
 1. Download or build the plugin `.jar`.
 2. Put the `.jar` file into your server's `plugins` folder.
 3. Install PlaceholderAPI if you want placeholder support.
-4. Restart your server.
-5. Edit the config if needed.
-6. Run:
+4. Install CombatLog if you want to block `/pvp off` while players are in combat.
+5. Restart your server.
+6. Edit the config if needed.
+7. Run:
 
 ```txt
 /pvp reload
@@ -215,18 +280,11 @@ messages:
 
 - Paper 1.21.11
 - Java 21
-- PlaceholderAPI optional, but required for placeholders
+
+Optional:
+
+- PlaceholderAPI for placeholders
+- CombatLog for combat-check support
 
 ---
 
-## Package Name
-
-```txt
-jre.frwostella.togglePVPCustom
-```
-
----
-
-## Author
-
-Made by Frwostella.
