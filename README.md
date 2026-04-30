@@ -159,18 +159,6 @@ Examples:
 %togglepvp_value% = 1 / 0
 %togglepvp_enabled% = true / false
 ```
-
-For nametag or below-name plugins that support relational placeholders, use:
-
-```txt
-%rel_togglepvp_status%
-%rel_togglepvp_status_colored%
-%rel_togglepvp_value%
-%rel_togglepvp_enabled%
-```
-
-Relational placeholders are useful when the display is showing another player's status instead of your own.
-
 ---
 
 ## TAB Belowname Setup
@@ -302,12 +290,6 @@ messages:
 
 - Paper 26.1+
 - Java 25
-
-For Paper 1.21+ / 1.21.11 support, use release `1.3`:
-
-```txt
-https://github.com/Frwostella/TogglePVPCustom/releases/tag/1.3
-```
 
 Optional:
 
