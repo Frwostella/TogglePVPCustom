@@ -16,9 +16,11 @@ import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.Projectile;
 import org.bukkit.event.EventHandler;
+import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
+import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.projectiles.ProjectileSource;
 import org.bukkit.scoreboard.Criteria;
@@ -29,6 +31,7 @@ import org.bukkit.scoreboard.ScoreboardManager;
 
 import java.io.File;
 import java.io.IOException;
+import java.lang.reflect.Method;
 import java.util.*;
 
 public final class TogglePVPCustom extends JavaPlugin implements Listener, CommandExecutor, TabCompleter {
@@ -60,6 +63,10 @@ public final class TogglePVPCustom extends JavaPlugin implements Listener, Comma
             getLogger().warning("PlaceholderAPI was not found. Placeholders will not work.");
         }
 
+        if (isCombatLogHookAvailable()) {
+            getLogger().info("CombatLog hook enabled.");
+        }
+
         setupBelowNameObjective();
         updateBelowNameForEveryone();
 
@@ -82,7 +89,10 @@ public final class TogglePVPCustom extends JavaPlugin implements Listener, Comma
         Bukkit.getScheduler().runTaskLater(this, this::updateBelowNameForEveryone, 20L);
     }
 
-    @EventHandler(ignoreCancelled = true)
+    /*
+     * Run early so blocked PvP damage gets cancelled before most plugins handle it.
+     */
+    @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
     public void onPlayerDamagePlayer(EntityDamageByEntityEvent event) {
         if (!(event.getEntity() instanceof Player victim)) {
             return;
@@ -100,17 +110,51 @@ public final class TogglePVPCustom extends JavaPlugin implements Listener, Comma
 
         if (!isPvpEnabled(attacker.getUniqueId())) {
             event.setCancelled(true);
+            clearCombatLogIfEnabled(attacker);
+            clearCombatLogIfEnabled(victim);
             sendCooldownMessage(attacker, "messages.your-pvp-disabled", null);
             return;
         }
 
         if (!isPvpEnabled(victim.getUniqueId())) {
             event.setCancelled(true);
+            clearCombatLogIfEnabled(attacker);
+            clearCombatLogIfEnabled(victim);
 
             Map<String, String> placeholders = new HashMap<>();
             placeholders.put("%target%", victim.getName());
 
             sendCooldownMessage(attacker, "messages.target-pvp-disabled", placeholders);
+        }
+    }
+
+    /*
+     * CombatLogPlugin may still tag cancelled hits because its listener may not ignore cancelled events.
+     * This runs after other listeners and clears CombatLog tags from blocked PvP hits.
+     */
+    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = false)
+    public void clearCombatLogAfterBlockedPvp(EntityDamageByEntityEvent event) {
+        if (!event.isCancelled()) {
+            return;
+        }
+
+        if (!(event.getEntity() instanceof Player victim)) {
+            return;
+        }
+
+        Player attacker = getAttackingPlayer(event.getDamager());
+
+        if (attacker == null) {
+            return;
+        }
+
+        if (attacker.getUniqueId().equals(victim.getUniqueId())) {
+            return;
+        }
+
+        if (!isPvpEnabled(attacker.getUniqueId()) || !isPvpEnabled(victim.getUniqueId())) {
+            clearCombatLogIfEnabled(attacker);
+            clearCombatLogIfEnabled(victim);
         }
     }
 
@@ -145,11 +189,61 @@ public final class TogglePVPCustom extends JavaPlugin implements Listener, Comma
     private void setPvpStatus(Player player, boolean enabled) {
         pvpStatus.put(player.getUniqueId(), enabled);
 
+        if (!enabled) {
+            clearCombatLogIfEnabled(player);
+        }
+
         if (getConfig().getBoolean("settings.save-player-status", true)) {
             savePlayerData();
         }
 
         updateBelowNameForEveryone();
+    }
+
+    private boolean isCombatLogHookAvailable() {
+        if (!getConfig().getBoolean("combatlog-hook.enabled", true)) {
+            return false;
+        }
+
+        String pluginName = getConfig().getString("combatlog-hook.plugin-name", "CombatLog");
+        Plugin combatLogPlugin = Bukkit.getPluginManager().getPlugin(pluginName);
+
+        return combatLogPlugin != null && combatLogPlugin.isEnabled();
+    }
+
+    private void clearCombatLogIfEnabled(Player player) {
+        if (!getConfig().getBoolean("combatlog-hook.enabled", true)) {
+            return;
+        }
+
+        if (!getConfig().getBoolean("combatlog-hook.clear-combat-on-blocked-pvp", true)) {
+            return;
+        }
+
+        clearCombatLog(player);
+    }
+
+    private void clearCombatLog(Player player) {
+        try {
+            String pluginName = getConfig().getString("combatlog-hook.plugin-name", "CombatLog");
+            Plugin combatLogPlugin = Bukkit.getPluginManager().getPlugin(pluginName);
+
+            if (combatLogPlugin == null || !combatLogPlugin.isEnabled()) {
+                return;
+            }
+
+            Method getCombatManagerMethod = combatLogPlugin.getClass().getMethod("getCombatManager");
+            Object combatManager = getCombatManagerMethod.invoke(combatLogPlugin);
+
+            if (combatManager == null) {
+                return;
+            }
+
+            Method removeMethod = combatManager.getClass().getMethod("remove", Player.class);
+            removeMethod.invoke(combatManager, player);
+        } catch (Exception exception) {
+            getLogger().warning("Could not clear CombatLog tag for " + player.getName() + ": " + exception.getMessage());
+        }
     }
 
     public String getPlaceholderStatus(UUID uuid) {
