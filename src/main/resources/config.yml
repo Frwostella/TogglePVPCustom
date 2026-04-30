@@ -8,6 +8,17 @@ settings:
   # Prevents spam when players keep trying to attack.
   attack-message-cooldown-seconds: 2
 
+combatlog-hook:
+  # Optional hook for Frwostella's CombatLog plugin.
+  enabled: true
+
+  # This must match the CombatLog plugin name in its plugin.yml.
+  plugin-name: "CombatLog"
+
+  # If true, blocked PvP hits will also clear CombatLog tags from both players.
+  # This prevents CombatLog from staying enabled when PvP is off.
+  clear-combat-on-blocked-pvp: true
+
 belowname:
   # This is the native Minecraft below-name objective.
   # Native below-name objectives can only show numbers, not text placeholders.
