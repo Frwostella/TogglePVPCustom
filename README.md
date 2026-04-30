@@ -61,9 +61,9 @@ The current version of TogglePVPCustom supports **Paper 26.1+** and should be bu
 | Target | Java | Status |
 |---|---|---|
 | Paper 26.1+ | Java 25 | Current version |
-| Paper 1.21+ / 1.21.11 | Java 21 | Use release `1.3` |
+| Paper 1.21+ / 1.21.11 | Java 21 | Check release `1.4.1` |
 
-For Paper 1.21+ / 1.21.11 support, download or view release `1.3` here:
+For Paper 1.21+ / 1.21.11 support, download or view release `1.4.1` here:
 
 ```txt
 https://github.com/Frwostella/TogglePVPCustom/releases/tag/1.3
