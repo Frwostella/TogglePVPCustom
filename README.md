@@ -57,10 +57,10 @@ Alias:
 
 These plugins are optional, but unlock extra features.
 
-| Plugin | Required? | Purpose |
-|---|---|---|
-| PlaceholderAPI | Optional | Enables PvP status placeholders |
-| CombatLog | Optional | Prevents players from disabling PvP while in combat |
+| Plugin | Required? | Link | Purpose |
+|---|---|---|---|
+| PlaceholderAPI | Optional | https://www.spigotmc.org/resources/placeholderapi.6245/ | Enables PvP status placeholders |
+| CombatLog | Optional | https://github.com/Frwostella/CombatLogPlugin | Prevents players from disabling PvP while in combat |
 
 In `plugin.yml`, the optional dependencies should be listed like this:
 
@@ -74,9 +74,15 @@ CombatLog is optional. TogglePVPCustom will still work without it.
 
 ---
 
-## CombatLog Hook
+## CombatLog Plugin
 
-If Frwostella's CombatLog plugin is installed, TogglePVPCustom can check if a player is currently combat tagged.
+This plugin supports Frwostella's CombatLog plugin:
+
+```txt
+https://github.com/Frwostella/CombatLogPlugin
+```
+
+If CombatLog is installed, TogglePVPCustom can check if a player is currently combat tagged.
 
 When enabled, players cannot run:
 
@@ -265,7 +271,7 @@ messages:
 1. Download or build the plugin `.jar`.
 2. Put the `.jar` file into your server's `plugins` folder.
 3. Install PlaceholderAPI if you want placeholder support.
-4. Install CombatLog if you want to block `/pvp off` while players are in combat.
+4. Install CombatLog from https://github.com/Frwostella/CombatLogPlugin if you want to block `/pvp off` while players are in combat.
 5. Restart your server.
 6. Edit the config if needed.
 7. Run:
@@ -284,7 +290,6 @@ messages:
 Optional:
 
 - PlaceholderAPI for placeholders
-- CombatLog for combat-check support
+- CombatLog for combat-check support: https://github.com/Frwostella/CombatLogPlugin
 
 ---
-
