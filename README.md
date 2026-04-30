@@ -8,11 +8,6 @@ The plugin also supports PlaceholderAPI, so PvP status can be displayed in score
 
 TogglePVPCustom can also optionally hook into Frwostella's CombatLog plugin. When CombatLog is installed and the hook is enabled, players cannot turn off PvP while they are in combat.
 
-> **Current version support:** The current version supports **Paper 26.1+**.
->
-> Looking for **Paper 1.21+ / 1.21.11 support**? Use the older release here:
-> https://github.com/Frwostella/TogglePVPCustom/releases/tag/1.3
-
 ---
 
 ## Features
