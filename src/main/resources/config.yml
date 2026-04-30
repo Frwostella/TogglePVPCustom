@@ -1,0 +1,50 @@
+settings:
+  # If true, new players have PvP enabled by default.
+  default-pvp: true
+
+  # Saves player PvP status into data.yml.
+  save-player-status: true
+
+  # Prevents spam when players keep trying to attack.
+  attack-message-cooldown-seconds: 2
+
+belowname:
+  # This is the native Minecraft below-name objective.
+  # Native below-name objectives can only show numbers, not text placeholders.
+  enabled: true
+
+  objective-name: "pvpstatus"
+
+  # Shows like:
+  # 1 PvP
+  # 0 PvP
+  display-name: "&cPvP"
+
+  enabled-score: 1
+  disabled-score: 0
+
+  remove-on-disable: true
+
+placeholders:
+  status-on: "ON"
+  status-off: "OFF"
+
+  status-colored-on: "&aON"
+  status-colored-off: "&cOFF"
+
+messages:
+  prefix: "&8[&cPvP&8] "
+
+  no-permission: "%prefix%&cYou do not have permission to use this command."
+  players-only: "%prefix%&cOnly players can use this command."
+  reload: "%prefix%&aConfiguration reloaded."
+
+  pvp-enabled: "%prefix%&aYour PvP is now ENABLED."
+  pvp-disabled: "%prefix%&cYour PvP is now DISABLED."
+  pvp-status-enabled: "%prefix%&aYour PvP is currently ENABLED."
+  pvp-status-disabled: "%prefix%&cYour PvP is currently DISABLED."
+
+  your-pvp-disabled: "%prefix%&cYou cannot attack while your PvP is disabled."
+  target-pvp-disabled: "%prefix%&cYou cannot attack &e%target% &cbecause their PvP is disabled."
+
+  usage: "%prefix%&cUsage: /pvp [on|off|status|reload]"

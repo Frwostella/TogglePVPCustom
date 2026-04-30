@@ -1,0 +1,24 @@
+name: TogglePVPCustom
+version: 1.0.0
+main: jre.frwostella.togglePVPCustom.TogglePVPCustom
+api-version: '1.21'
+author: Frwostella
+description: Allows players to individually toggle their PvP status.
+softdepend:
+  - PlaceholderAPI
+
+commands:
+  pvp:
+    description: Toggle your PvP status.
+    usage: /pvp [on|off|status|reload]
+    aliases:
+      - togglepvp
+
+permissions:
+  togglepvp.use:
+    description: Allows players to use /pvp.
+    default: true
+
+  togglepvp.reload:
+    description: Allows reloading the plugin config.
+    default: op
