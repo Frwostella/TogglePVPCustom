@@ -8,6 +8,11 @@ The plugin also supports PlaceholderAPI, so PvP status can be displayed in score
 
 TogglePVPCustom can also optionally hook into Frwostella's CombatLog plugin. When CombatLog is installed and the hook is enabled, players cannot turn off PvP while they are in combat.
 
+> **Current version support:** The current version supports **Paper 26.1+**.
+>
+> Looking for **Paper 1.21+ / 1.21.11 support**? Use the older release here:
+> https://github.com/Frwostella/TogglePVPCustom/releases/tag/1.3
+
 ---
 
 ## Features
@@ -23,7 +28,7 @@ TogglePVPCustom can also optionally hook into Frwostella's CombatLog plugin. Whe
 - TAB belowname-objective compatible.
 - Optional CombatLog support.
 - Blocks `/pvp off` while a player is in combat if CombatLog is installed.
-- Build profile support for Paper 1.21.11 and Paper 26.1+.
+- Current release support for Paper 26.1+.
 
 ---
 
@@ -56,29 +61,23 @@ Alias:
 
 ## Version Support
 
-TogglePVPCustom can be built for both Paper 1.21.11 and newer Paper 26.1+ versions.
+The current version of TogglePVPCustom supports **Paper 26.1+** and should be built with **Java 25**.
 
-| Target | Java | Maven Profile |
+| Target | Java | Status |
 |---|---|---|
-| Paper 1.21.11 | Java 21 | `paper-1.21.11` |
-| Paper 26.1+ | Java 25 | `paper-26.1-plus` |
+| Paper 26.1+ | Java 25 | Current version |
+| Paper 1.21+ / 1.21.11 | Java 21 | Use release `1.3` |
 
-Build for Paper 1.21.11:
+For Paper 1.21+ / 1.21.11 support, download or view release `1.3` here:
+
+```txt
+https://github.com/Frwostella/TogglePVPCustom/releases/tag/1.3
+```
+
+Build the current Paper 26.1+ version:
 
 ```bash
 mvn clean package
-```
-
-or:
-
-```bash
-mvn clean package -Ppaper-1.21.11
-```
-
-Build for Paper 26.1+:
-
-```bash
-mvn clean package -Ppaper-26.1-plus
 ```
 
 The compiled jar will be inside the `target` folder.
@@ -316,7 +315,14 @@ messages:
 
 ## Requirements
 
-- Paper 1.21.11 with Java 21, or Paper 26.1+ with Java 25
+- Paper 26.1+
+- Java 25
+
+For Paper 1.21+ / 1.21.11 support, use release `1.3`:
+
+```txt
+https://github.com/Frwostella/TogglePVPCustom/releases/tag/1.3
+```
 
 Optional:
 
