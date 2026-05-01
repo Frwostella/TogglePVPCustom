@@ -1,5 +1,5 @@
 name: TogglePVPCustom
-version: 1.0.0
+version: 1.4.2
 main: jre.frwostella.togglePVPCustom.TogglePVPCustom
 api-version: '1.21'
 author: Frwostella
@@ -23,3 +23,7 @@ permissions:
   togglepvp.reload:
     description: Allows reloading the plugin config.
     default: op
+
+  togglepvp.cooldown.bypass:
+    description: Allows players to bypass the /pvp command cooldown.
+    default: false
