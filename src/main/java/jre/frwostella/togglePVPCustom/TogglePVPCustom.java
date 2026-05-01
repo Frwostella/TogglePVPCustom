@@ -38,6 +38,13 @@ public final class TogglePVPCustom extends JavaPlugin implements Listener, Comma
 
     private final Map<UUID, Boolean> pvpStatus = new HashMap<>();
     private final Map<UUID, Long> attackMessageCooldown = new HashMap<>();
+    private final Map<UUID, Long> pvpCommandCooldown = new HashMap<>();
+
+    /*
+     * Local combat tracking.
+     * This prevents /pvp off escaping combat even if the external CombatLog hook fails.
+     */
+    private final Map<UUID, Long> localCombatUntil = new HashMap<>();
 
     private File dataFile;
     private FileConfiguration dataConfig;
@@ -90,7 +97,7 @@ public final class TogglePVPCustom extends JavaPlugin implements Listener, Comma
     }
 
     /*
-     * Run early so blocked PvP damage gets cancelled before most plugins handle it.
+     * Runs early so blocked PvP damage gets cancelled before CombatLog handles it.
      */
     @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
     public void onPlayerDamagePlayer(EntityDamageByEntityEvent event) {
@@ -110,16 +117,12 @@ public final class TogglePVPCustom extends JavaPlugin implements Listener, Comma
 
         if (!isPvpEnabled(attacker.getUniqueId())) {
             event.setCancelled(true);
-            clearCombatLogIfEnabled(attacker);
-            clearCombatLogIfEnabled(victim);
             sendCooldownMessage(attacker, "messages.your-pvp-disabled", null);
             return;
         }
 
         if (!isPvpEnabled(victim.getUniqueId())) {
             event.setCancelled(true);
-            clearCombatLogIfEnabled(attacker);
-            clearCombatLogIfEnabled(victim);
 
             Map<String, String> placeholders = new HashMap<>();
             placeholders.put("%target%", victim.getName());
@@ -129,15 +132,11 @@ public final class TogglePVPCustom extends JavaPlugin implements Listener, Comma
     }
 
     /*
-     * CombatLogPlugin may still tag cancelled hits because its listener may not ignore cancelled events.
-     * This runs after other listeners and clears CombatLog tags from blocked PvP hits.
+     * Tracks real successful PvP hits locally.
+     * This is the important fix that blocks /pvp off while in combat.
      */
-    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = false)
-    public void clearCombatLogAfterBlockedPvp(EntityDamageByEntityEvent event) {
-        if (!event.isCancelled()) {
-            return;
-        }
-
+    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
+    public void trackSuccessfulPvpCombat(EntityDamageByEntityEvent event) {
         if (!(event.getEntity() instanceof Player victim)) {
             return;
         }
@@ -153,9 +152,19 @@ public final class TogglePVPCustom extends JavaPlugin implements Listener, Comma
         }
 
         if (!isPvpEnabled(attacker.getUniqueId()) || !isPvpEnabled(victim.getUniqueId())) {
-            clearCombatLogIfEnabled(attacker);
-            clearCombatLogIfEnabled(victim);
+            return;
         }
+
+        int seconds = getConfig().getInt("settings.pvp-toggle-block-seconds", 15);
+
+        if (seconds <= 0) {
+            return;
+        }
+
+        long expireAt = System.currentTimeMillis() + (seconds * 1000L);
+
+        localCombatUntil.put(attacker.getUniqueId(), expireAt);
+        localCombatUntil.put(victim.getUniqueId(), expireAt);
     }
 
     private Player getAttackingPlayer(Entity damager) {
@@ -189,9 +198,10 @@ public final class TogglePVPCustom extends JavaPlugin implements Listener, Comma
     private void setPvpStatus(Player player, boolean enabled) {
         pvpStatus.put(player.getUniqueId(), enabled);
 
-        if (!enabled) {
-            clearCombatLogIfEnabled(player);
-        }
+        /*
+         * Do NOT clear CombatLog here.
+         * Clearing combat here lets players use /pvp off to escape combat.
+         */
 
         if (getConfig().getBoolean("settings.save-player-status", true)) {
             savePlayerData();
@@ -211,39 +221,98 @@ public final class TogglePVPCustom extends JavaPlugin implements Listener, Comma
         return combatLogPlugin != null && combatLogPlugin.isEnabled();
     }
 
-    private void clearCombatLogIfEnabled(Player player) {
-        if (!getConfig().getBoolean("combatlog-hook.enabled", true)) {
-            return;
+    private boolean isPvpChangeCommand(String[] args) {
+        if (args.length == 0) {
+            return true;
         }
 
-        if (!getConfig().getBoolean("combatlog-hook.clear-combat-on-blocked-pvp", true)) {
-            return;
-        }
-
-        clearCombatLog(player);
+        return switch (args[0].toLowerCase(Locale.ROOT)) {
+            case "on", "enable", "enabled", "off", "disable", "disabled" -> true;
+            default -> false;
+        };
     }
 
-    private void clearCombatLog(Player player) {
+    private boolean isPvpToggleBlockedInCombat(Player player) {
+        if (!getConfig().getBoolean("combatlog-hook.block-toggle-while-in-combat", true)) {
+            return false;
+        }
+
+        return isLocallyCombatTagged(player) || isPlayerInCombat(player);
+    }
+
+    private boolean isLocallyCombatTagged(Player player) {
+        long expireAt = localCombatUntil.getOrDefault(player.getUniqueId(), 0L);
+
+        if (expireAt <= 0L) {
+            return false;
+        }
+
+        if (System.currentTimeMillis() >= expireAt) {
+            localCombatUntil.remove(player.getUniqueId());
+            return false;
+        }
+
+        return true;
+    }
+
+    private boolean isPlayerInCombat(Player player) {
         try {
+            if (!getConfig().getBoolean("combatlog-hook.enabled", true)) {
+                return false;
+            }
+
             String pluginName = getConfig().getString("combatlog-hook.plugin-name", "CombatLog");
             Plugin combatLogPlugin = Bukkit.getPluginManager().getPlugin(pluginName);
 
             if (combatLogPlugin == null || !combatLogPlugin.isEnabled()) {
-                return;
+                return false;
             }
 
             Method getCombatManagerMethod = combatLogPlugin.getClass().getMethod("getCombatManager");
             Object combatManager = getCombatManagerMethod.invoke(combatLogPlugin);
 
             if (combatManager == null) {
-                return;
+                return false;
             }
 
-            Method removeMethod = combatManager.getClass().getMethod("remove", Player.class);
-            removeMethod.invoke(combatManager, player);
+            Method isInCombatMethod = combatManager.getClass().getMethod("isInCombat", Player.class);
+            Object result = isInCombatMethod.invoke(combatManager, player);
+
+            return result instanceof Boolean value && value;
         } catch (Exception exception) {
-            getLogger().warning("Could not clear CombatLog tag for " + player.getName() + ": " + exception.getMessage());
+            getLogger().warning("Could not check CombatLog status for " + player.getName() + ": " + exception.getMessage());
+            return false;
         }
+    }
+
+    private boolean checkPvpCommandCooldown(Player player) {
+        int cooldownSeconds = getConfig().getInt("settings.pvp-command-cooldown-seconds", 0);
+
+        if (cooldownSeconds <= 0) {
+            return true;
+        }
+
+        if (player.hasPermission("togglepvp.cooldown.bypass")) {
+            return true;
+        }
+
+        long now = System.currentTimeMillis();
+        long cooldownMillis = cooldownSeconds * 1000L;
+        long lastUsed = pvpCommandCooldown.getOrDefault(player.getUniqueId(), 0L);
+        long remainingMillis = cooldownMillis - (now - lastUsed);
+
+        if (remainingMillis > 0) {
+            long remainingSeconds = (remainingMillis + 999L) / 1000L;
+
+            Map<String, String> placeholders = new HashMap<>();
+            placeholders.put("%time%", String.valueOf(remainingSeconds));
+
+            sendMessage(player, "messages.command-cooldown", placeholders);
+            return false;
+        }
+
+        pvpCommandCooldown.put(player.getUniqueId(), now);
+        return true;
     }
 
     public String getPlaceholderStatus(UUID uuid) {
@@ -348,6 +417,7 @@ public final class TogglePVPCustom extends JavaPlugin implements Listener, Comma
         }
 
         attackMessageCooldown.clear();
+        pvpCommandCooldown.clear();
 
         setupBelowNameObjective();
         updateBelowNameForEveryone();
@@ -481,6 +551,19 @@ public final class TogglePVPCustom extends JavaPlugin implements Listener, Comma
         if (!player.hasPermission("togglepvp.use")) {
             sendMessage(player, "messages.no-permission", null);
             return true;
+        }
+
+        boolean pvpChangeCommand = isPvpChangeCommand(args);
+
+        if (pvpChangeCommand) {
+            if (isPvpToggleBlockedInCombat(player)) {
+                sendMessage(player, "messages.cannot-toggle-in-combat", null);
+                return true;
+            }
+
+            if (!checkPvpCommandCooldown(player)) {
+                return true;
+            }
         }
 
         if (args.length == 0) {
