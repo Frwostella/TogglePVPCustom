@@ -5,8 +5,16 @@ settings:
   # Saves player PvP status into data.yml.
   save-player-status: true
 
-  # Prevents spam when players keep trying to attack.
+  # Prevents spam when players keep trying to attack PvP-disabled players.
   attack-message-cooldown-seconds: 2
+
+  # Cooldown before a player can use /pvp, /pvp on, or /pvp off again.
+  # Set to 0 to disable.
+  pvp-command-cooldown-seconds: 5
+
+  # How long players cannot toggle PvP after a real successful PvP hit.
+  # Match this with your CombatLog combat-time.
+  pvp-toggle-block-seconds: 15
 
 combatlog-hook:
   # Optional hook for Frwostella's CombatLog plugin.
@@ -15,9 +23,8 @@ combatlog-hook:
   # This must match the CombatLog plugin name in its plugin.yml.
   plugin-name: "CombatLog"
 
-  # If true, blocked PvP hits will also clear CombatLog tags from both players.
-  # This prevents CombatLog from staying enabled when PvP is off.
-  clear-combat-on-blocked-pvp: true
+  # If true, players cannot change PvP status while they are combat tagged.
+  block-toggle-while-in-combat: true
 
 belowname:
   # This is the native Minecraft below-name objective.
@@ -57,5 +64,8 @@ messages:
 
   your-pvp-disabled: "%prefix%&cYou cannot attack while your PvP is disabled."
   target-pvp-disabled: "%prefix%&cYou cannot attack &e%target% &cbecause their PvP is disabled."
+
+  cannot-toggle-in-combat: "%prefix%&cYou cannot change your PvP status while in combat."
+  command-cooldown: "%prefix%&cPlease wait &e%time%s &cbefore using this command again."
 
   usage: "%prefix%&cUsage: /pvp [on|off|status|reload]"
